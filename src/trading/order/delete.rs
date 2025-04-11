@@ -1,3 +1,4 @@
+#![allow(clippy::result_large_err)]
 use serde::Deserialize;
 use ureq::Response;
 
@@ -36,13 +37,13 @@ mod tests {
         //! Will fail if there are no orders
         let res = delete_all_orders(AccountType::Paper).unwrap();
         dbg!(&res);
-        assert!(res.len() > 0);
+        assert!(!res.is_empty());
     }
 
     #[test]
     fn test_delete_order_by_id() {
         //! Will fail if the id is not found
         let res = delete_by_id("52fec271-0b23-4f79-8ab4-97e9981879fc", AccountType::Paper).unwrap();
-        assert!(res.status() == 204);
+        assert_eq!(res.status(), 204);
     }
 }

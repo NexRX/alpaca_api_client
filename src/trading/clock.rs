@@ -1,3 +1,4 @@
+#![allow(clippy::result_large_err)]
 use crate::request;
 
 use super::AccountType;
@@ -29,6 +30,6 @@ mod tests {
     fn test_get_market_clock() {
         let res = get_market_clock(AccountType::Paper).unwrap();
         dbg!(&res);
-        assert!(res.timestamp.len() > 0);
+        assert!(!res.timestamp.is_empty());
     }
 }

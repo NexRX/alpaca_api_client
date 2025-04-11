@@ -153,17 +153,14 @@ impl<'a> OptionChainQuery<'a> {
         format!("{}{}", self.url, query)
     }
 
+    #[allow(clippy::result_large_err)]
     pub fn send(&self) -> Result<OptionSnapshots, ureq::Error> {
         let route = self.build();
         let mut snapshots: OptionSnapshots = HashMap::new();
         let mut page_token = None;
 
         let mut i = 0;
-        let data_limit = if let Some(limit) = self.limit {
-            limit
-        } else {
-            100
-        };
+        let data_limit = self.limit.unwrap_or(100);
         loop {
             if i >= data_limit {
                 break;

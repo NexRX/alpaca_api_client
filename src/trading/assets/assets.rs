@@ -29,6 +29,7 @@ pub struct AssetsQuery<'a> {
     pub attributes: Option<Vec<&'a str>>,
 }
 
+#[allow(clippy::result_large_err)]
 impl<'a> AssetsQuery<'a> {
     pub fn new(account_type: AccountType) -> Self {
         Self {
@@ -115,7 +116,7 @@ mod tests {
             .unwrap();
 
         dbg!(&res);
-        assert!(res.len() > 0);
+        assert!(!res.is_empty());
     }
 
     #[test]

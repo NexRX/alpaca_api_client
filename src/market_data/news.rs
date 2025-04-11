@@ -120,17 +120,14 @@ impl<'a> NewsQuery<'a> {
         format!("{}?{}", self.url, query)
     }
 
+    #[allow(clippy::result_large_err)]
     pub fn send(&self) -> Result<News, ureq::Error> {
         let route = self.build();
         let mut news = Vec::new();
         let mut page_token = None;
 
         let mut i = 0;
-        let data_limit = if let Some(limit) = self.limit {
-            limit
-        } else {
-            50
-        };
+        let data_limit = self.limit.unwrap_or(50);
         loop {
             if i >= data_limit {
                 break;

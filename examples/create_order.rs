@@ -17,105 +17,109 @@ fn main() {
 }
 
 fn create_market_order() {
-    CreateOrderQuery::new("AAPL", OrderSide::Buy, OrderType::Market, TimeInForce::Day)
+    CreateOrderQuery::builder()
+        .symbol("AAPL")
+        .side(OrderSide::Buy)
+        .r#type(OrderType::Market)
+        .time_in_force(TimeInForce::Day)
         .qty("1")
+        .build()
+        .send(AccountType::Paper)
+        .unwrap();
+}
+fn create_limit_order() {
+    CreateOrderQuery::builder()
+        .symbol("AAPL")
+        .side(OrderSide::Buy)
+        .r#type(OrderType::Limit)
+        .time_in_force(TimeInForce::GoodTilCanceled)
+        .limit_price("100")
+        .qty("1")
+        .build()
         .send(AccountType::Paper)
         .unwrap();
 }
 
-fn create_limit_order() {
-    CreateOrderQuery::new(
-        "AAPL",
-        OrderSide::Buy,
-        OrderType::Limit,
-        TimeInForce::GoodTilCanceled,
-    )
-    .limit_price("100")
-    .qty("1")
-    .send(AccountType::Paper)
-    .unwrap();
-}
-
 fn create_stop_order() {
-    CreateOrderQuery::new(
-        "AAPL",
-        OrderSide::Buy,
-        OrderType::Stop,
-        TimeInForce::GoodTilCanceled,
-    )
-    .stop_price("100")
-    .qty("1")
-    .send(AccountType::Paper)
-    .unwrap();
+    CreateOrderQuery::builder()
+        .symbol("AAPL")
+        .side(OrderSide::Buy)
+        .r#type(OrderType::Stop)
+        .time_in_force(TimeInForce::GoodTilCanceled)
+        .stop_price("100")
+        .qty("1")
+        .build()
+        .send(AccountType::Paper)
+        .unwrap();
 }
 
 fn create_stop_limit_order() {
-    CreateOrderQuery::new(
-        "AAPL",
-        OrderSide::Buy,
-        OrderType::StopLimit,
-        TimeInForce::GoodTilCanceled,
-    )
-    .stop_price("100")
-    .limit_price("200")
-    .qty("1")
-    .send(AccountType::Paper)
-    .unwrap();
+    CreateOrderQuery::builder()
+        .symbol("AAPL")
+        .side(OrderSide::Buy)
+        .r#type(OrderType::StopLimit)
+        .time_in_force(TimeInForce::GoodTilCanceled)
+        .stop_price("100")
+        .limit_price("200")
+        .qty("1")
+        .build()
+        .send(AccountType::Paper)
+        .unwrap();
 }
 
 fn create_trailing_stop_order() {
-    CreateOrderQuery::new(
-        "AAPL",
-        OrderSide::Buy,
-        OrderType::TrailingStop,
-        TimeInForce::GoodTilCanceled,
-    )
-    .qty("1")
-    .trail_percent("10")
-    .send(AccountType::Paper)
-    .unwrap();
+    CreateOrderQuery::builder()
+        .symbol("AAPL")
+        .side(OrderSide::Buy)
+        .r#type(OrderType::TrailingStop)
+        .time_in_force(TimeInForce::GoodTilCanceled)
+        .qty("1")
+        .trail_percent("10")
+        .build()
+        .send(AccountType::Paper)
+        .unwrap();
 }
 
 fn create_bracket_order() {
-    CreateOrderQuery::new(
-        "AAPL",
-        OrderSide::Buy,
-        OrderType::Market,
-        TimeInForce::GoodTilCanceled,
-    )
-    .qty("1")
-    .order_class(OrderClass::Bracket)
-    .take_profit(TakeProfit::new("300"))
-    .stop_loss(StopLoss::new("200", "199"))
-    .send(AccountType::Paper)
-    .unwrap();
+    CreateOrderQuery::builder()
+        .symbol("AAPL")
+        .side(OrderSide::Buy)
+        .r#type(OrderType::Market)
+        .time_in_force(TimeInForce::GoodTilCanceled)
+        .qty("1")
+        .order_class(OrderClass::Bracket)
+        .take_profit(TakeProfit::new("300"))
+        .stop_loss(StopLoss::new("200", "199"))
+        .build()
+        .send(AccountType::Paper)
+        .unwrap();
 }
 
 fn create_oco_order() {
-    CreateOrderQuery::new(
-        "AAPL",
-        OrderSide::Buy,
-        OrderType::Limit,
-        TimeInForce::GoodTilCanceled,
-    )
-    .qty("1")
-    .order_class(OrderClass::OneCancelsOther)
-    .take_profit(TakeProfit::new("199"))
-    .stop_loss(StopLoss::new("200", "201"))
-    .send(AccountType::Paper)
-    .unwrap();
+    CreateOrderQuery::builder()
+        .symbol("AAPL")
+        .side(OrderSide::Buy)
+        .r#type(OrderType::Limit)
+        .time_in_force(TimeInForce::GoodTilCanceled)
+        .qty("1")
+        .order_class(OrderClass::OneCancelsOther)
+        .take_profit(TakeProfit::new("199"))
+        .stop_loss(StopLoss::new("200", "201"))
+        .build()
+        .send(AccountType::Paper)
+        .unwrap();
 }
 
 fn create_oto_order() {
-    CreateOrderQuery::new(
-        "AAPL",
-        OrderSide::Buy,
-        OrderType::Market,
-        TimeInForce::GoodTilCanceled,
-    )
-    .qty("1")
-    .order_class(OrderClass::OneTriggersOther)
-    .stop_loss(StopLoss::new("200", "189"))
-    .send(AccountType::Paper)
-    .unwrap();
+    CreateOrderQuery::builder()
+        .symbol("AAPL")
+        .side(OrderSide::Buy)
+        .r#type(OrderType::Market)
+        .time_in_force(TimeInForce::GoodTilCanceled)
+        .qty("1")
+        .order_class(OrderClass::OneTriggersOther)
+        .stop_loss(StopLoss::new("200", "189"))
+        .build()
+        .send(AccountType::Paper)
+        .unwrap();
 }

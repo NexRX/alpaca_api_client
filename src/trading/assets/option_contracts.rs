@@ -62,6 +62,7 @@ pub struct OptionContractsQuery<'a> {
     pub ppind: Option<bool>,
 }
 
+#[allow(clippy::result_large_err)]
 impl<'a> OptionContractsQuery<'a> {
     pub fn new(account_type: AccountType) -> Self {
         Self {
@@ -204,11 +205,7 @@ impl<'a> OptionContractsQuery<'a> {
         let mut page_token = None;
 
         let mut i = 0;
-        let data_limit = if let Some(limit) = self.limit {
-            limit
-        } else {
-            100
-        };
+        let data_limit = self.limit.unwrap_or(100);
         loop {
             if i >= data_limit {
                 break;

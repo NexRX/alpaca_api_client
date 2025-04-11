@@ -65,7 +65,7 @@ impl<'a> HistoricalCryptoBarsQuery<'a> {
         let mut query = format!(
             "symbols={}&timeframe={}",
             self.symbols.join(","),
-            self.timeframe.to_string()
+            self.timeframe
         );
 
         if let Some(start) = self.start {
@@ -89,6 +89,7 @@ impl<'a> HistoricalCryptoBarsQuery<'a> {
         format!("{}?{}", self.url, query)
     }
 
+    #[allow(clippy::result_large_err)]
     pub fn send(self) -> Result<HistoricalBars, ureq::Error> {
         let route = self.build();
         let mut multi_bars: HistoricalBars = HashMap::new();
@@ -105,7 +106,7 @@ impl<'a> HistoricalCryptoBarsQuery<'a> {
 
             // Add multi_bars to collection
             for (symbol, bars) in response.bars {
-                multi_bars.entry(symbol).or_insert(Vec::new()).extend(bars);
+                multi_bars.entry(symbol).or_default().extend(bars);
             }
 
             // If a token is in response, assign to page_token for next loop
@@ -132,6 +133,7 @@ impl<'a> LatestCryptoBarsQuery<'a> {
         format!("{}?{}", self.url, query)
     }
 
+    #[allow(clippy::result_large_err)]
     pub fn send(self) -> Result<LatestBars, ureq::Error> {
         let route = self.build();
         let response = request("GET", &route).call()?;

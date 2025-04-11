@@ -14,19 +14,22 @@ pub enum TimeFrame {
     OneMonth,
 }
 
-impl ToString for TimeFrame {
-    fn to_string(&self) -> String {
-        match self {
-            TimeFrame::OneMinute => "1Min".to_string(),
-            TimeFrame::FiveMinutes => "5Min".to_string(),
-            TimeFrame::FifteenMinutes => "15Min".to_string(),
-            TimeFrame::ThirtyMinutes => "30Min".to_string(),
-            TimeFrame::OneHour => "1H".to_string(),
-            TimeFrame::FourHours => "4H".to_string(),
-            TimeFrame::OneDay => "1D".to_string(),
-            TimeFrame::OneWeek => "1W".to_string(),
-            TimeFrame::OneMonth => "1M".to_string(),
-        }
+use std::fmt;
+
+impl fmt::Display for TimeFrame {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let s = match self {
+            TimeFrame::OneMinute => "1Min",
+            TimeFrame::FiveMinutes => "5Min",
+            TimeFrame::FifteenMinutes => "15Min",
+            TimeFrame::ThirtyMinutes => "30Min",
+            TimeFrame::OneHour => "1H",
+            TimeFrame::FourHours => "4H",
+            TimeFrame::OneDay => "1D",
+            TimeFrame::OneWeek => "1W",
+            TimeFrame::OneMonth => "1M",
+        };
+        write!(f, "{}", s)
     }
 }
 

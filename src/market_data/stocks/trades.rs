@@ -141,17 +141,14 @@ impl<'a> HistoricalTradesQuery<'a> {
         format!("{}?{}", self.url, query)
     }
 
+    #[allow(clippy::result_large_err)]
     pub fn send(&self) -> Result<HistoricalTrades, ureq::Error> {
         let route = self.build();
         let mut trades: HistoricalTrades = HashMap::new();
         let mut page_token = None;
 
         let mut i = 0;
-        let data_limit = if let Some(limit) = self.limit {
-            limit
-        } else {
-            1000
-        };
+        let data_limit = self.limit.unwrap_or(1000);
         loop {
             if i >= data_limit {
                 break;
@@ -168,7 +165,7 @@ impl<'a> HistoricalTradesQuery<'a> {
             // Add trades to collection
             for (symbol, trade) in response.trades {
                 i += trade.len() as i32;
-                trades.entry(symbol).or_insert(Vec::new()).extend(trade);
+                trades.entry(symbol).or_default().extend(trade);
             }
 
             // If a token is in response, assign to page_token for next loop
@@ -213,6 +210,7 @@ impl<'a> LatestTradesQuery<'a> {
         format!("{}?{}", self.url, query)
     }
 
+    #[allow(clippy::result_large_err)]
     pub fn send(self) -> Result<LatestTrades, ureq::Error> {
         let route = self.build();
         let response = request("GET", &route).call()?;

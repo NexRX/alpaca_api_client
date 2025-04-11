@@ -49,6 +49,7 @@ impl<'a> LatestOptionQuotesQuery<'a> {
         url
     }
 
+    #[allow(clippy::result_large_err)]
     pub fn send(self) -> Result<LatestOptionQuotes, ureq::Error> {
         let route = self.build();
         let response = request("GET", &route).call()?;

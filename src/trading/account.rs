@@ -1,4 +1,7 @@
+#![allow(clippy::result_large_err)]
 use crate::request;
+use chrono::{DateTime, NaiveDate, Utc};
+use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -21,45 +24,44 @@ pub struct AccountConfiguration {
 pub struct Account {
     pub id: String,
     pub admin_configurations: HashMap<String, String>,
-    #[serde(deserialize_with = "crate::serde::deserialize_to_string_map")]
-    pub user_configurations: Option<HashMap<String, String>>,
+    pub user_configurations: AccountConfiguration,
     pub account_number: String,
     pub status: String,
     pub crypto_status: String,
     pub currency: String,
-    pub buying_power: String,
-    pub regt_buying_power: String,
-    pub daytrading_buying_power: String,
-    pub options_buying_power: String,
-    pub effective_buying_power: String,
-    pub non_marginable_buying_power: String,
-    pub bod_dtbp: String,
-    pub cash: String,
-    pub accrued_fees: String,
-    pub pending_transfer_in: Option<String>,
-    pub portfolio_value: String,
+    pub buying_power: Decimal,
+    pub regt_buying_power: Decimal,
+    pub daytrading_buying_power: Decimal,
+    pub options_buying_power: Decimal,
+    pub effective_buying_power: Decimal,
+    pub non_marginable_buying_power: Decimal,
+    pub bod_dtbp: Decimal,
+    pub cash: Decimal,
+    pub accrued_fees: Decimal,
+    pub pending_transfer_in: Option<Decimal>,
+    pub portfolio_value: Decimal,
     pub pattern_day_trader: bool,
     pub trading_blocked: bool,
     pub transfers_blocked: bool,
     pub account_blocked: bool,
-    pub created_at: String,
+    pub created_at: DateTime<Utc>,
     pub trade_suspended_by_user: bool,
-    pub multiplier: String,
+    pub multiplier: Decimal,
     pub shorting_enabled: bool,
-    pub equity: String,
-    pub last_equity: String,
-    pub long_market_value: String,
-    pub short_market_value: String,
-    pub initial_margin: String,
-    pub maintenance_margin: String,
-    pub last_maintenance_margin: String,
-    pub sma: String,
+    pub equity: Decimal,
+    pub last_equity: Decimal,
+    pub long_market_value: Decimal,
+    pub short_market_value: Decimal,
+    pub initial_margin: Decimal,
+    pub maintenance_margin: Decimal,
+    pub last_maintenance_margin: Decimal,
+    pub sma: Decimal,
     pub daytrade_count: i32,
-    pub balance_asof: String,
+    pub balance_asof: NaiveDate,
     pub crypto_tier: usize,
     pub options_trading_level: usize,
-    pub intraday_adjustments: String,
-    pub pending_reg_taf_fees: String,
+    pub intraday_adjustments: Decimal,
+    pub pending_reg_taf_fees: Decimal,
 }
 
 pub fn get_account(account_type: AccountType) -> Result<Account, ureq::Error> {
@@ -67,7 +69,7 @@ pub fn get_account(account_type: AccountType) -> Result<Account, ureq::Error> {
         AccountType::Live => "https://api.alpaca.markets/v2/account",
         AccountType::Paper => "https://paper-api.alpaca.markets/v2/account",
     };
-    let response = request("GET", &url).call()?;
+    let response = request("GET", url).call()?;
     Ok(response.into_json()?)
 }
 
@@ -78,11 +80,11 @@ pub fn get_account_configurations(
         AccountType::Live => "https://api.alpaca.markets/v2/account/configurations",
         AccountType::Paper => "https://paper-api.alpaca.markets/v2/account/configurations",
     };
-    let response = request("GET", &url).call()?;
+    let response = request("GET", url).call()?;
     Ok(response.into_json()?)
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Default)]
 pub struct PatchAccountConfigQuery<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
     dtbp_check: Option<&'a str>,
@@ -113,20 +115,6 @@ pub struct PatchAccountConfigQuery<'a> {
 }
 
 impl<'a> PatchAccountConfigQuery<'a> {
-    pub fn new() -> Self {
-        Self {
-            dtbp_check: None,
-            trade_confirm_email: None,
-            suspend_trade: None,
-            no_shorting: None,
-            fractional_trading: None,
-            max_margin_multiplier: None,
-            max_options_trading_level: None,
-            pdt_check: None,
-            ptp_no_exception_entry: None,
-        }
-    }
-
     pub fn dtbp_check(mut self, dtbp_check: &'a str) -> Self {
         self.dtbp_check = Some(dtbp_check);
         self
@@ -201,17 +189,17 @@ mod tests {
     fn test_get_account_config() {
         let account = get_account_configurations(AccountType::Paper).unwrap();
         dbg!(&account);
-        assert!(account.suspend_trade.unwrap() == false);
+        assert_eq!(account.suspend_trade, Some(false));
     }
 
     #[test]
     fn test_patch_account_config() {
-        let account = PatchAccountConfigQuery::new()
+        let account = PatchAccountConfigQuery::default()
             .ptp_no_exception_entry(false)
             .send(AccountType::Paper)
             .unwrap();
 
         dbg!(&account);
-        assert!(account.ptp_no_exception_entry.unwrap() == false);
+        assert_eq!(account.ptp_no_exception_entry, Some(false));
     }
 }

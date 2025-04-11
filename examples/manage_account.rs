@@ -23,7 +23,7 @@ fn get_account_config() {
 }
 
 fn patch_account_config() {
-    PatchAccountConfigQuery::new()
+    PatchAccountConfigQuery::default()
         .ptp_no_exception_entry(false)
         .suspend_trade(false)
         .no_shorting(false)

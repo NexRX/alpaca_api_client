@@ -1,6 +1,9 @@
+use std::fmt::Display;
+
 use super::{order::Order, AccountType};
 use crate::request;
-use serde::Deserialize;
+use rust_decimal::Decimal;
+use serde::{Deserialize, Serialize};
 
 pub type AllPositions = Vec<Position>;
 pub type AllClosedPositions = Vec<ClosedPosition>;
@@ -12,31 +15,32 @@ pub struct ClosedPosition {
     pub body: Order,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct Position {
     pub asset_id: String,
     pub symbol: String,
     pub exchange: String,
     pub asset_class: String,
-    pub avg_entry_price: String,
-    pub qty: String,
-    pub qty_available: String,
-    pub side: String,
-    pub market_value: String,
-    pub cost_basis: String,
-    pub unrealized_pl: String,
-    pub unrealized_plpc: String,
-    pub unrealized_intraday_pl: String,
-    pub unrealized_intraday_plpc: String,
-    pub current_price: String,
-    pub lastday_price: String,
-    pub change_today: String,
+    pub avg_entry_price: Decimal,
+    pub qty: Decimal,
+    pub qty_available: Decimal,
+    pub side: PositionSide,
+    pub market_value: Decimal,
+    pub cost_basis: Decimal,
+    pub unrealized_pl: Decimal,
+    pub unrealized_plpc: Decimal,
+    pub unrealized_intraday_pl: Decimal,
+    pub unrealized_intraday_plpc: Decimal,
+    pub current_price: Decimal,
+    pub lastday_price: Decimal,
+    pub change_today: Decimal,
 }
 
 pub struct PositionsQuery<'a> {
     url: &'a str,
 }
 
+#[allow(clippy::result_large_err)]
 impl<'a> PositionsQuery<'a> {
     pub fn new(account_type: AccountType) -> Self {
         Self {
@@ -107,6 +111,26 @@ impl<'a> PositionsQuery<'a> {
     }
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "lowercase")]
+pub enum PositionSide {
+    Long,
+    Short,
+}
+
+impl Display for PositionSide {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::Long => "long",
+                Self::Short => "short",
+            }
+        )
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -117,7 +141,7 @@ mod tests {
             .get_all_open_positions()
             .unwrap();
         dbg!(&res);
-        assert!(res.len() > 0);
+        assert!(!res.is_empty());
     }
 
     #[test]
@@ -144,7 +168,7 @@ mod tests {
             .close_all_positions(true)
             .unwrap();
         dbg!(&res);
-        assert!(res.len() > 0);
+        assert!(!res.is_empty());
     }
 
     #[test]

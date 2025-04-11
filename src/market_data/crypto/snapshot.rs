@@ -37,6 +37,7 @@ impl<'a> SnapshotsQuery<'a> {
         format!("{}?symbols={}", self.url, self.symbols.join(","))
     }
 
+    #[allow(clippy::result_large_err)]
     pub fn send(self) -> Result<CryptoSnapshots, ureq::Error> {
         let route = self.build();
         dbg!(&route);

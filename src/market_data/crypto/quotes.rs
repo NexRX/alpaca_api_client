@@ -103,17 +103,14 @@ impl<'a> HistoricalCryptoQuotesQuery<'a> {
         format!("{}?{}", self.url, query)
     }
 
+    #[allow(clippy::result_large_err)]
     pub fn send(&self) -> Result<HistoricalCryptoQuotes, ureq::Error> {
         let route = self.build();
         let mut quotes: HistoricalCryptoQuotes = HashMap::new();
         let mut page_token: Option<String> = None;
 
         let mut i = 0;
-        let data_limit = if let Some(limit) = self.limit {
-            limit
-        } else {
-            1000
-        };
+        let data_limit = self.limit.unwrap_or(1000);
 
         loop {
             if i >= data_limit {
@@ -130,7 +127,7 @@ impl<'a> HistoricalCryptoQuotesQuery<'a> {
             // Add quotes to collection
             for (symbol, quote) in response.quotes {
                 i += quote.len() as i32;
-                quotes.entry(symbol).or_insert(Vec::new()).extend(quote);
+                quotes.entry(symbol).or_default().extend(quote);
             }
 
             // If a token is in response, assign to page_token for next loop
@@ -157,6 +154,7 @@ impl<'a> LatestCryptoQuotesQuery<'a> {
         format!("{}?{}", self.url, query)
     }
 
+    #[allow(clippy::result_large_err)]
     pub fn send(self) -> Result<LatestCryptoQuotes, ureq::Error> {
         let route = self.build();
         let response = request("GET", &route).call()?;

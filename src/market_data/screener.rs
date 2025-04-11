@@ -19,16 +19,18 @@ pub struct ActiveStocksQuery<'a> {
     by: Option<&'a str>,
     top: Option<i32>,
 }
-
-impl<'a> ActiveStocksQuery<'a> {
-    pub fn new() -> Self {
+impl Default for ActiveStocksQuery<'_> {
+    fn default() -> Self {
         Self {
             url: "https://data.alpaca.markets/v1beta1/screener/stocks/most-actives",
             by: None,
             top: None,
         }
     }
+}
 
+#[allow(clippy::result_large_err)]
+impl<'a> ActiveStocksQuery<'a> {
     pub fn by(mut self, by: &'a str) -> Self {
         self.by = Some(by);
         self
@@ -85,22 +87,23 @@ pub enum MarketType {
     Crypto,
 }
 
-impl ToString for MarketType {
-    fn to_string(&self) -> String {
-        match self {
-            MarketType::Stocks => "stocks".to_string(),
-            MarketType::Crypto => "crypto".to_string(),
-        }
+use std::fmt;
+
+impl fmt::Display for MarketType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let market_type = match self {
+            MarketType::Stocks => "stocks",
+            MarketType::Crypto => "crypto",
+        };
+        write!(f, "{}", market_type)
     }
 }
 
+#[allow(clippy::result_large_err)]
 impl TopMoversQuery {
     pub fn new(market_type: MarketType) -> Self {
         Self {
-            url: format!(
-                "https://data.alpaca.markets/v1beta1/screener/{}/movers",
-                market_type.to_string()
-            ),
+            url: format!("https://data.alpaca.markets/v1beta1/screener/{market_type}/movers"),
             top: None,
         }
     }
@@ -132,10 +135,14 @@ mod tests {
 
     #[test]
     fn test_active_stocks_query() {
-        let query = ActiveStocksQuery::new().by("volume").top(5).send().unwrap();
+        let query = ActiveStocksQuery::default()
+            .by("volume")
+            .top(5)
+            .send()
+            .unwrap();
 
         dbg!(&query);
-        assert!(query.len() > 0);
+        assert!(!query.is_empty());
     }
 
     #[test]
@@ -145,6 +152,6 @@ mod tests {
             .send()
             .unwrap();
         dbg!(&query);
-        assert!(query.gainers.len() > 0);
+        assert!(!query.gainers.is_empty());
     }
 }

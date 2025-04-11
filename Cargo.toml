@@ -11,7 +11,11 @@ keywords = ["stocks", "trading", "alpaca", "api", "client"]
 categories = ["finance"]
 
 [dependencies]
+chrono = { version = "0.4.40", features = ["serde"] }
 dotenvy = "0.15.7"
+lombok = "0.4.0"
+rust_decimal = { version = "1.37.1", features = ["serde"] }
 serde = {version = "1.0.210", features = ["derive"]}
 serde_json = "1.0.132"
+typed-builder = "0.21.0"
 ureq = { version = "2.10.1", features = ["json"] }

@@ -143,6 +143,7 @@ impl<'a> HistoricalQuotesQuery<'a> {
         format!("{}?{}", self.url, query)
     }
 
+    #[allow(clippy::result_large_err)]
     pub fn send(&self) -> Result<HistoricalQuotes, ureq::Error> {
         let route = self.build();
         let mut quotes: HistoricalQuotes = HashMap::new();
@@ -150,11 +151,7 @@ impl<'a> HistoricalQuotesQuery<'a> {
 
         // this endpoint returns page tokens no matter what.so we need to apply the limit. Default is 1000.
         let mut i = 0;
-        let data_limit = if let Some(limit) = self.limit {
-            limit
-        } else {
-            1000
-        };
+        let data_limit = self.limit.unwrap_or(1000);
         loop {
             if i >= data_limit {
                 break;
@@ -170,7 +167,7 @@ impl<'a> HistoricalQuotesQuery<'a> {
             // Add quotes to collection
             for (symbol, quote) in response.quotes {
                 i += quote.len() as i32;
-                quotes.entry(symbol).or_insert(Vec::new()).extend(quote);
+                quotes.entry(symbol).or_default().extend(quote);
             }
 
             // If a token is in response, assign to page_token for next loop
@@ -215,6 +212,7 @@ impl<'a> LatestQuotesQuery<'a> {
         format!("{}?{}", self.url, query)
     }
 
+    #[allow(clippy::result_large_err)]
     pub fn send(self) -> Result<LatestQuotes, ureq::Error> {
         let route = self.build();
         let response = request("GET", &route).call()?;

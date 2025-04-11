@@ -54,6 +54,7 @@ impl<'a> SnapshotsQuery<'a> {
         format!("{}?{}", self.url, query)
     }
 
+    #[allow(clippy::result_large_err)]
     pub fn send(self) -> Result<Snapshots, ureq::Error> {
         let route = self.build();
         let response = request("GET", &route).call()?;

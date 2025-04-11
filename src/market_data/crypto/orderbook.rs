@@ -40,6 +40,7 @@ impl<'a> OrderbookQuery<'a> {
         format!("{}?symbols={}", self.url, symbols)
     }
 
+    #[allow(clippy::result_large_err)]
     pub fn send(self) -> Result<Orderbooks, ureq::Error> {
         let route = self.build();
         let response = request("GET", &route).call()?;

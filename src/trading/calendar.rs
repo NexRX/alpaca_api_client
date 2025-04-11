@@ -1,13 +1,14 @@
+#![allow(clippy::result_large_err)]
 use super::AccountType;
 use crate::request;
 use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]
 pub struct CalendarDay {
-    pub date: String,
-    pub open: String,
-    pub close: String,
-    pub settlement_date: String,
+    pub date: chrono::NaiveDate,
+    pub open: chrono::NaiveTime,
+    pub close: chrono::NaiveTime,
+    pub settlement_date: chrono::NaiveDate,
 }
 
 pub type Calendar = Vec<CalendarDay>;
@@ -78,6 +79,6 @@ mod tests {
         let query = CalendarQuery::new(AccountType::Paper).send().unwrap();
 
         dbg!(&query);
-        assert!(query.len() > 0);
+        assert!(!query.is_empty());
     }
 }

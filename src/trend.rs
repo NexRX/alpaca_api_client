@@ -5,11 +5,14 @@ pub enum Trend {
     Bearish,
 }
 
-impl ToString for Trend {
-    fn to_string(&self) -> String {
-        match self {
-            Trend::Bullish => "bullish".to_string(),
-            Trend::Bearish => "bearish".to_string(),
-        }
+use std::fmt;
+
+impl fmt::Display for Trend {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let trend_str = match self {
+            Trend::Bullish => "bullish",
+            Trend::Bearish => "bearish",
+        };
+        write!(f, "{}", trend_str)
     }
 }

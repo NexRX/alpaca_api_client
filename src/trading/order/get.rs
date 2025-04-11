@@ -1,7 +1,17 @@
+#![allow(clippy::result_large_err)]
+use serde::{Deserialize, Serialize};
+use typed_builder::TypedBuilder;
+
 use super::{AllOrders, Order};
 use crate::{request, trading::AccountType};
 
+#[derive(Serialize, Deserialize, Debug, TypedBuilder)]
+#[builder(field_defaults(default, setter(strip_option, into)))]
 pub struct GetOrdersQuery<'a> {
+    #[builder(!default, setter(!strip_option, transform = |account_type: AccountType| match account_type {
+        AccountType::Live => "https://api.alpaca.markets/v2/orders",
+        AccountType::Paper => "https://paper-api.alpaca.markets/v2/orders",
+    }))]
     pub url: &'a str,
     pub status: Option<&'a str>,
     pub limit: Option<usize>,
@@ -14,63 +24,6 @@ pub struct GetOrdersQuery<'a> {
 }
 
 impl<'a> GetOrdersQuery<'a> {
-    pub fn new(account_type: AccountType) -> Self {
-        Self {
-            url: match account_type {
-                AccountType::Live => "https://api.alpaca.markets/v2/orders",
-                AccountType::Paper => "https://paper-api.alpaca.markets/v2/orders",
-            },
-            status: None,
-            limit: None,
-            after: None,
-            until: None,
-            direction: None,
-            nested: None,
-            symbols: None,
-            side: None,
-        }
-    }
-
-    pub fn status(mut self, status: &'a str) -> Self {
-        self.status = Some(status);
-        self
-    }
-
-    pub fn limit(mut self, limit: usize) -> Self {
-        self.limit = Some(limit);
-        self
-    }
-
-    pub fn after(mut self, after: &'a str) -> Self {
-        self.after = Some(after);
-        self
-    }
-
-    pub fn until(mut self, until: &'a str) -> Self {
-        self.until = Some(until);
-        self
-    }
-
-    pub fn direction(mut self, direction: &'a str) -> Self {
-        self.direction = Some(direction);
-        self
-    }
-
-    pub fn nested(mut self, nested: bool) -> Self {
-        self.nested = Some(nested);
-        self
-    }
-
-    pub fn symbols(mut self, symbols: Vec<&'a str>) -> Self {
-        self.symbols = Some(symbols);
-        self
-    }
-
-    pub fn side(mut self, side: &'a str) -> Self {
-        self.side = Some(side);
-        self
-    }
-
     fn build(self) -> String {
         let mut query = String::new();
         if let Some(status) = self.status {
@@ -122,23 +75,25 @@ mod tests {
 
     #[test]
     fn test_get_all_orders_query() {
-        let res = GetOrdersQuery::new(AccountType::Paper)
+        let res = GetOrdersQuery::builder()
+            .url(AccountType::Paper)
             .status("closed")
+            .build()
             .send()
             .unwrap();
 
         dbg!(&res);
-        // assert!(res.len() > 0);
-        assert!(false);
+        assert!(!res.is_empty());
     }
 
     #[test]
     fn test_get_order_by_id() {
-        let res = GetOrdersQuery::new(AccountType::Paper)
-            .get_by_id("3c9067a5-6553-40e5-ba56-b4fec94119dd", true)
-            .unwrap();
+        let res = GetOrdersQuery::builder()
+            .url(AccountType::Paper)
+            .build()
+            .get_by_id("3c9067a5-6553-40e5-ba56-b4fec94119dd", true);
 
         dbg!(&res);
-        assert!(false);
+        assert!(matches!(res, Err(ureq::Error::Status(404, _))))
     }
 }
