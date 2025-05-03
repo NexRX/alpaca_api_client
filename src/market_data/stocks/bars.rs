@@ -1,4 +1,5 @@
 use crate::{request, TimeFrame};
+use rust_decimal::Decimal;
 use serde::Deserialize;
 use std::collections::HashMap;
 
@@ -6,13 +7,13 @@ use std::collections::HashMap;
 #[derive(Deserialize, Debug)]
 pub struct StockBar {
     pub t: String, // Timestamp
-    pub o: f32,    // Open
-    pub h: f32,    // High
-    pub l: f32,    // Low
-    pub c: f32,    // Close
-    pub v: f32,    // Volume
+    pub o: Decimal,    // Open
+    pub h: Decimal,    // High
+    pub l: Decimal,    // Low
+    pub c: Decimal,    // Close
+    pub v: Decimal,    // Volume
     pub n: i32,    // Number of trades
-    pub vw: f32,   // Volume weighted average
+    pub vw: Decimal,   // Volume weighted average
 }
 
 /// A custom type for a hashmap of stock symbols and bars

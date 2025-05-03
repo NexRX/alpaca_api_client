@@ -3,6 +3,7 @@ use core::fmt;
 
 use super::{Order, OrderSide};
 use crate::{request, trading::AccountType};
+use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use typed_builder::TypedBuilder;
 
@@ -21,22 +22,23 @@ pub struct CreateOrderQuery<'a> {
     extend_hours: bool,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    qty: Option<&'a str>,
+    #[builder(!default, setter(!strip_option))]
+    qty: Option<Decimal>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     notional: Option<&'a str>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    limit_price: Option<&'a str>,
+    limit_price: Option<Decimal>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    stop_price: Option<&'a str>,
+    stop_price: Option<Decimal>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    trail_price: Option<&'a str>,
+    trail_price: Option<Decimal>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    trail_percent: Option<&'a str>,
+    trail_percent: Option<Decimal>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     client_order_id: Option<&'a str>,
@@ -45,10 +47,10 @@ pub struct CreateOrderQuery<'a> {
     order_class: Option<OrderClass>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    take_profit: Option<TakeProfit<'a>>,
+    take_profit: Option<TakeProfit>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    stop_loss: Option<StopLoss<'a>>,
+    stop_loss: Option<StopLoss>,
 }
 
 impl CreateOrderQuery<'_> {
@@ -67,12 +69,15 @@ impl CreateOrderQuery<'_> {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[serde(rename_all = "snake_case")]
 pub enum OrderType {
+    #[default]
     Market,
     Limit,
     Stop,
     StopLimit,
+    /// Not an option for Options trading I believe
     TrailingStop,
 }
 
@@ -89,13 +94,20 @@ impl fmt::Display for OrderType {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, Default)]
 pub enum TimeInForce {
+    #[default]
+    #[serde(rename = "day")]
     Day,
+    #[serde(rename = "gtc")]
     GoodTilCanceled,
+    #[serde(rename = "opg")]
     OpeningOrder,
+    #[serde(rename = "cls")]
     ClosingOrder,
+    #[serde(rename = "ioc")]
     ImmediateOrCancel,
+    #[serde(rename = "fok")]
     FillOrKill,
 }
 
@@ -115,9 +127,13 @@ impl fmt::Display for TimeInForce {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum OrderClass {
+    #[serde(rename = "")]
     Simple,
+    #[serde(rename = "bracket")]
     Bracket,
+    #[serde(rename = "oco")]
     OneCancelsOther,
+    #[serde(rename = "oto")]
     OneTriggersOther,
 }
 
@@ -133,25 +149,25 @@ impl fmt::Display for OrderClass {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct TakeProfit<'a> {
-    pub limit_price: &'a str,
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
+pub struct TakeProfit {
+    pub limit_price: Decimal,
 }
 
-impl<'a> TakeProfit<'a> {
-    pub fn new(limit_price: &'a str) -> Self {
+impl TakeProfit {
+    pub fn new(limit_price: Decimal) -> Self {
         Self { limit_price }
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct StopLoss<'a> {
-    pub stop_price: &'a str,
-    pub limit_price: &'a str,
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
+pub struct StopLoss {
+    pub stop_price: Decimal,
+    pub limit_price: Decimal,
 }
 
-impl<'a> StopLoss<'a> {
-    pub fn new(stop_price: &'a str, limit_price: &'a str) -> Self {
+impl StopLoss {
+    pub fn new(stop_price: Decimal, limit_price: Decimal) -> Self {
         Self {
             stop_price,
             limit_price,
@@ -161,6 +177,10 @@ impl<'a> StopLoss<'a> {
 
 #[cfg(test)]
 mod tests {
+    use rust_decimal_macros::dec;
+
+    use crate::panic_error_response;
+
     use super::*;
 
     #[test]
@@ -169,9 +189,10 @@ mod tests {
             .symbol("AAPL")
             .side(OrderSide::Buy)
             .r#type(OrderType::Market)
-            .qty("1")
+            .qty(dec!(1))
             .build()
             .send(AccountType::Paper)
+            .map_err(|err| panic_error_response!(err))
             .unwrap();
 
         dbg!(&order);
@@ -185,10 +206,11 @@ mod tests {
             .side(OrderSide::Buy)
             .r#type(OrderType::Limit)
             .time_in_force(TimeInForce::GoodTilCanceled)
-            .limit_price("100")
-            .qty("1")
+            .limit_price(dec!(100))
+            .qty(dec!(1))
             .build()
             .send(AccountType::Paper)
+            .map_err(|err| panic_error_response!(err))
             .unwrap();
 
         dbg!(&order);
@@ -202,10 +224,11 @@ mod tests {
             .side(OrderSide::Buy)
             .r#type(OrderType::Stop)
             .time_in_force(TimeInForce::GoodTilCanceled)
-            .stop_price("100")
-            .qty("1")
+            .stop_price(dec!(100))
+            .qty(dec!(1))
             .build()
             .send(AccountType::Paper)
+            .map_err(|err| panic_error_response!(err))
             .unwrap();
 
         dbg!(&order);
@@ -219,11 +242,12 @@ mod tests {
             .side(OrderSide::Buy)
             .r#type(OrderType::StopLimit)
             .time_in_force(TimeInForce::GoodTilCanceled)
-            .stop_price("100")
-            .limit_price("200")
-            .qty("1")
+            .stop_price(dec!(100))
+            .limit_price(dec!(200))
+            .qty(dec!(1))
             .build()
             .send(AccountType::Paper)
+            .map_err(|err| panic_error_response!(err))
             .unwrap();
 
         dbg!(&order);
@@ -237,10 +261,11 @@ mod tests {
             .side(OrderSide::Buy)
             .r#type(OrderType::TrailingStop)
             .time_in_force(TimeInForce::GoodTilCanceled)
-            .qty("1")
-            .trail_percent("10")
+            .qty(dec!(1))
+            .trail_percent(dec!(10))
             .build()
             .send(AccountType::Paper)
+            .map_err(|err| panic_error_response!(err))
             .unwrap();
 
         dbg!(&order);
@@ -254,12 +279,13 @@ mod tests {
             .side(OrderSide::Buy)
             .r#type(OrderType::Market)
             .time_in_force(TimeInForce::GoodTilCanceled)
-            .qty("1")
+            .qty(dec!(1))
             .order_class(OrderClass::Bracket)
-            .take_profit(TakeProfit::new("300"))
-            .stop_loss(StopLoss::new("200", "199"))
+            .take_profit(TakeProfit::new(dec!(300)))
+            .stop_loss(StopLoss::new(dec!(200), dec!(199)))
             .build()
             .send(AccountType::Paper)
+            .map_err(|err| panic_error_response!(err))
             .unwrap();
 
         dbg!(&order);
@@ -270,15 +296,16 @@ mod tests {
     fn test_create_oco_order() {
         let order = CreateOrderQuery::builder()
             .symbol("AAPL")
-            .side(OrderSide::Buy)
+            .side(OrderSide::Sell)
             .r#type(OrderType::Limit)
             .time_in_force(TimeInForce::GoodTilCanceled)
-            .qty("1")
+            .qty(dec!(1))
             .order_class(OrderClass::OneCancelsOther)
-            .take_profit(TakeProfit::new("199"))
-            .stop_loss(StopLoss::new("200", "201"))
+            .take_profit(TakeProfit::new(dec!(201)))
+            .stop_loss(StopLoss::new(dec!(200), dec!(199)))
             .build()
             .send(AccountType::Paper)
+            .map_err(|err| panic_error_response!(err))
             .unwrap();
 
         dbg!(&order);
@@ -292,11 +319,12 @@ mod tests {
             .side(OrderSide::Buy)
             .r#type(OrderType::Market)
             .time_in_force(TimeInForce::GoodTilCanceled)
-            .qty("1")
+            .qty(dec!(1))
             .order_class(OrderClass::OneTriggersOther)
-            .stop_loss(StopLoss::new("200", "189"))
+            .stop_loss(StopLoss::new(dec!(190), dec!(189)))
             .build()
             .send(AccountType::Paper)
+            // .map_err(|err| panic_error_response!(err))
             .unwrap();
 
         dbg!(&order);

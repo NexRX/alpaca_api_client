@@ -15,7 +15,7 @@ pub struct ClosedPosition {
     pub body: Order,
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, Default)]
 pub struct Position {
     pub asset_id: String,
     pub symbol: String,
@@ -111,9 +111,10 @@ impl<'a> PositionsQuery<'a> {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, Default, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum PositionSide {
+    #[default]
     Long,
     Short,
 }

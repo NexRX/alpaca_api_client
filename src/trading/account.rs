@@ -1,20 +1,23 @@
 #![allow(clippy::result_large_err)]
 use crate::request;
 use chrono::{DateTime, NaiveDate, Utc};
-use rust_decimal::Decimal;
+use rust_decimal::{prelude::FromPrimitive, Decimal};
 use serde::{Deserialize, Serialize};
+use typed_builder::TypedBuilder;
 use std::collections::HashMap;
 
 use super::AccountType;
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, TypedBuilder)]
+#[builder(field_defaults(default, setter(strip_option, into)))]
 pub struct AccountConfiguration {
     pub dtbp_check: Option<String>,
     pub trade_confirm_email: Option<String>,
     pub suspend_trade: Option<bool>,
     pub no_shorting: Option<bool>,
     pub fractional_trading: Option<bool>,
-    pub max_margin_multiplier: Option<String>,
+    #[builder(default = Some(Decimal::from_u8(1).unwrap()))]
+    pub max_margin_multiplier: Option<Decimal>,
     pub max_options_trading_level: Option<u64>,
     pub pdt_check: Option<String>,
     pub ptp_no_exception_entry: Option<bool>,

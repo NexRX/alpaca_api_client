@@ -1,3 +1,4 @@
+#![allow(unused_must_use)]
 use alpaca_api_client::trading::{order::GetOrdersQuery, AccountType};
 
 fn main() {
@@ -6,20 +7,18 @@ fn main() {
 }
 
 fn get_all_orders_query() {
-    GetOrdersQuery::builder()
+    dbg!(GetOrdersQuery::builder()
         .url(AccountType::Paper)
         .status("closed")
         .nested(true)
         .side("buy")
         .build()
-        .send()
-        .unwrap();
+        .send());
 }
 
 fn get_order_by_id() {
-    GetOrdersQuery::builder()
+    dbg!(GetOrdersQuery::builder()
         .url(AccountType::Paper)
         .build()
-        .get_by_id("3c9067a5-6553-40e5-ba56-b4fec94119dd", true)
-        .unwrap();
+        .get_by_id("3c9067a5-6553-40e5-ba56-b4fec94119dd", true));
 }

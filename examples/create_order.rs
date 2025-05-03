@@ -4,6 +4,7 @@ use alpaca_api_client::trading::{
     },
     AccountType,
 };
+use rust_decimal_macros::dec;
 
 fn main() {
     create_market_order();
@@ -22,7 +23,7 @@ fn create_market_order() {
         .side(OrderSide::Buy)
         .r#type(OrderType::Market)
         .time_in_force(TimeInForce::Day)
-        .qty("1")
+        .qty(dec!(1))
         .build()
         .send(AccountType::Paper)
         .unwrap();
@@ -33,8 +34,8 @@ fn create_limit_order() {
         .side(OrderSide::Buy)
         .r#type(OrderType::Limit)
         .time_in_force(TimeInForce::GoodTilCanceled)
-        .limit_price("100")
-        .qty("1")
+        .limit_price(dec!(100))
+        .qty(dec!(1))
         .build()
         .send(AccountType::Paper)
         .unwrap();
@@ -46,8 +47,8 @@ fn create_stop_order() {
         .side(OrderSide::Buy)
         .r#type(OrderType::Stop)
         .time_in_force(TimeInForce::GoodTilCanceled)
-        .stop_price("100")
-        .qty("1")
+        .stop_price(dec!(100))
+        .qty(dec!(1))
         .build()
         .send(AccountType::Paper)
         .unwrap();
@@ -59,9 +60,9 @@ fn create_stop_limit_order() {
         .side(OrderSide::Buy)
         .r#type(OrderType::StopLimit)
         .time_in_force(TimeInForce::GoodTilCanceled)
-        .stop_price("100")
-        .limit_price("200")
-        .qty("1")
+        .stop_price(dec!(100))
+        .limit_price(dec!(200))
+        .qty(dec!(1))
         .build()
         .send(AccountType::Paper)
         .unwrap();
@@ -73,8 +74,8 @@ fn create_trailing_stop_order() {
         .side(OrderSide::Buy)
         .r#type(OrderType::TrailingStop)
         .time_in_force(TimeInForce::GoodTilCanceled)
-        .qty("1")
-        .trail_percent("10")
+        .qty(dec!(1))
+        .trail_percent(dec!(10))
         .build()
         .send(AccountType::Paper)
         .unwrap();
@@ -86,10 +87,10 @@ fn create_bracket_order() {
         .side(OrderSide::Buy)
         .r#type(OrderType::Market)
         .time_in_force(TimeInForce::GoodTilCanceled)
-        .qty("1")
+        .qty(dec!(1))
         .order_class(OrderClass::Bracket)
-        .take_profit(TakeProfit::new("300"))
-        .stop_loss(StopLoss::new("200", "199"))
+        .take_profit(TakeProfit::new(dec!(300)))
+        .stop_loss(StopLoss::new(dec!(200), dec!(199)))
         .build()
         .send(AccountType::Paper)
         .unwrap();
@@ -101,10 +102,10 @@ fn create_oco_order() {
         .side(OrderSide::Buy)
         .r#type(OrderType::Limit)
         .time_in_force(TimeInForce::GoodTilCanceled)
-        .qty("1")
+        .qty(dec!(1))
         .order_class(OrderClass::OneCancelsOther)
-        .take_profit(TakeProfit::new("199"))
-        .stop_loss(StopLoss::new("200", "201"))
+        .take_profit(TakeProfit::new(dec!(199)))
+        .stop_loss(StopLoss::new(dec!(200), dec!(201)))
         .build()
         .send(AccountType::Paper)
         .unwrap();
@@ -116,9 +117,9 @@ fn create_oto_order() {
         .side(OrderSide::Buy)
         .r#type(OrderType::Market)
         .time_in_force(TimeInForce::GoodTilCanceled)
-        .qty("1")
+        .qty(dec!(1))
         .order_class(OrderClass::OneTriggersOther)
-        .stop_loss(StopLoss::new("200", "189"))
+        .stop_loss(StopLoss::new(dec!(200), dec!(189)))
         .build()
         .send(AccountType::Paper)
         .unwrap();

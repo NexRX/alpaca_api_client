@@ -22,3 +22,12 @@ fn request(method: &str, address: &str) -> Request {
         .set("APCA-API-KEY-ID", &id_key)
         .set("APCA-API-SECRET-KEY", &secret_key)
 }
+
+#[cfg(test)]
+macro_rules! panic_error_response {
+    ($err:ident) => {
+        panic!("{:?}", $err.into_response().unwrap().into_string().unwrap())
+    };
+}
+#[cfg(test)]
+pub(crate) use panic_error_response;
